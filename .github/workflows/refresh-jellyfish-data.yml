@@ -18,7 +18,7 @@ jobs:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
         run: |
           curl --fail --silent --show-error \
-            --header "Authorization: ${DATA_GO_KR_SERVICE_KEY}" \
+            --header "Authorization: Infuser ${DATA_GO_KR_SERVICE_KEY}" \
             "https://api.odcloud.kr/api/15145982/v1/uddi:6a7e74a7-9580-4f16-9700-be23e227bd94?page=1&perPage=1000" \
             --output jellyfish-source.json
       - name: Build beach status file
