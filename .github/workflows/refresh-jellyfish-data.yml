@@ -1,0 +1,33 @@
+name: Refresh jellyfish observations
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download approved public data
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+        run: |
+          curl --fail --silent --show-error \
+            --header "Authorization: ${DATA_GO_KR_SERVICE_KEY}" \
+            "https://api.odcloud.kr/api/15145982/v1/uddi:6a7e74a7-9580-4f16-9700-be23e227bd94?page=1&perPage=1000" \
+            --output jellyfish-source.json
+      - name: Build beach status file
+        run: node scripts/build-jellyfish-status.mjs jellyfish-source.json data/jellyfish-status.json
+      - name: Publish refreshed status when changed
+        run: |
+          if git diff --quiet -- data/jellyfish-status.json; then exit 0; fi
+          git config user.name "jellyfish-data-bot"
+          git config user.email "actions@github.com"
+          git add data/jellyfish-status.json
+          git commit -m "Refresh jellyfish observation data"
+          git push
